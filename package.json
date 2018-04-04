@@ -10,6 +10,11 @@
     "react-scripts": "1.0.17",
     "webgme": "^2.24.0"
   },
+  "devDependencies": {
+    "mocha": "^2.2.5",
+    "rimraf": "^2.4.0",
+    "chai": "^3.0.0"
+  },
   "scripts": {
     "start": "node app.js",
     "build": "react-scripts build",

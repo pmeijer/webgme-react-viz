@@ -1,14 +1,13 @@
-/*globals*/
+/*jshint node: true*/
 /**
+ * @author lattmann / https://github.com/lattmann
  * @author pmeijer / https://github.com/pmeijer
  */
 
-let env = process.env.NODE_ENV || 'default',
+var env = process.env.NODE_ENV || 'default',
     configFilename = __dirname + '/config.' + env + '.js',
     config = require(configFilename),
-    validateConfig = require('webgme/config/validator').validateConfig;
+    validateConfig = require('webgme/config/validator');
 
-console.info('Using configuration from ' + configFilename);
 validateConfig(configFilename);
-
 module.exports = config;
