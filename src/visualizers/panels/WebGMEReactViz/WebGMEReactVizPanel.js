@@ -7,12 +7,15 @@ define([
     'js/PanelBase/PanelBaseWithHeader',
     'js/PanelManager/IActivePanel',
     'widgets/WebGMEReactViz/WebGMEReactVizWidget',
-    './WebGMEReactVizControl'
+    './WebGMEReactVizControl',
+    'webgme-react-viz/static/js/main.bece31e5',
+    'css!webgme-react-viz/static/css/main.a267f5fe.css'
 ], function (
     PanelBaseWithHeader,
     IActivePanel,
     WebGMEReactVizWidget,
-    WebGMEReactVizControl
+    WebGMEReactVizControl,
+    reactApp
 ) {
     'use strict';
 
@@ -23,6 +26,7 @@ define([
         //set properties from options
         options[PanelBaseWithHeader.OPTIONS.LOGGER_INSTANCE_NAME] = 'WebGMEReactVizPanel';
         options[PanelBaseWithHeader.OPTIONS.FLOATING_TITLE] = true;
+
 
         //call parent's constructor
         PanelBaseWithHeader.apply(this, [options, layoutManager]);
@@ -41,23 +45,33 @@ define([
 
     WebGMEReactVizPanel.prototype._initialize = function () {
         var self = this;
+        let id = 'react-viz-id';
 
-        //set Widget title
-        this.setTitle('');
+        this.$el.prop('id', id);
 
-        this.widget = new WebGMEReactVizWidget(this.logger, this.$el);
-
-        this.widget.setTitle = function (title) {
-            self.setTitle(title);
-        };
-
-        this.control = new WebGMEReactVizControl({
-            logger: this.logger,
-            client: this._client,
-            widget: this.widget
+        // The $el element does not exist yet.
+        setTimeout(()=> {
+            reactApp(id);
+            setTimeout(()=> {
+                // This timeout is just to get the spinner..
+                window.onGMEInit(self._client)
+            }, 1000);
         });
 
-        this.onActivate();
+
+        // this.widget = new WebGMEReactVizWidget(this.logger, this.$el);
+        //
+        // this.widget.setTitle = function (title) {
+        //     self.setTitle(title);
+        // };
+
+        // this.control = new WebGMEReactVizControl({
+        //     logger: this.logger,
+        //     client: this._client,
+        //     widget: this.widget
+        // });
+
+        //this.onActivate();
     };
 
     /* OVERRIDE FROM WIDGET-WITH-HEADER */
@@ -69,32 +83,32 @@ define([
     };
 
     WebGMEReactVizPanel.prototype.onResize = function (width, height) {
-        this.logger.debug('onResize --> width: ' + width + ', height: ' + height);
-        this.widget.onWidgetContainerResize(width, height);
+        // this.logger.debug('onResize --> width: ' + width + ', height: ' + height);
+        // this.widget.onWidgetContainerResize(width, height);
     };
 
     /* * * * * * * * Visualizer life cycle callbacks * * * * * * * */
     WebGMEReactVizPanel.prototype.destroy = function () {
-        this.control.destroy();
-        this.widget.destroy();
-
+        // this.control.destroy();
+        // this.widget.destroy();
+        //
         PanelBaseWithHeader.prototype.destroy.call(this);
-        WebGMEGlobal.KeyboardManager.setListener(undefined);
-        WebGMEGlobal.Toolbar.refresh();
+        // WebGMEGlobal.KeyboardManager.setListener(undefined);
+        // WebGMEGlobal.Toolbar.refresh();
     };
 
     WebGMEReactVizPanel.prototype.onActivate = function () {
-        this.widget.onActivate();
-        this.control.onActivate();
-        WebGMEGlobal.KeyboardManager.setListener(this.widget);
-        WebGMEGlobal.Toolbar.refresh();
+        // this.widget.onActivate();
+        // this.control.onActivate();
+        // WebGMEGlobal.KeyboardManager.setListener(this.widget);
+        // WebGMEGlobal.Toolbar.refresh();
     };
 
     WebGMEReactVizPanel.prototype.onDeactivate = function () {
-        this.widget.onDeactivate();
-        this.control.onDeactivate();
-        WebGMEGlobal.KeyboardManager.setListener(undefined);
-        WebGMEGlobal.Toolbar.refresh();
+        // this.widget.onDeactivate();
+        // this.control.onDeactivate();
+        // WebGMEGlobal.KeyboardManager.setListener(undefined);
+        // WebGMEGlobal.Toolbar.refresh();
     };
 
     return WebGMEReactVizPanel;
