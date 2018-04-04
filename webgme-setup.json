@@ -1,4 +1,16 @@
 {
-  "components": {},
-  "dependencies": {}
+  "components": {
+    "visualizers": {
+      "WebGMEReactViz": {
+        "src": "panels/WebGMEReactViz/WebGMEReactVizPanel",
+        "title": "WebGMEReactViz",
+        "panel": "src/visualizers/panels/WebGMEReactViz",
+        "secondary": false,
+        "widget": "src/visualizers/widgets/WebGMEReactViz"
+      }
+    }
+  },
+  "dependencies": {
+    "visualizers": {}
+  }
 }
