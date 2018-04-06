@@ -7,7 +7,6 @@
     "prop-types": "^15.6.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
-    "react-scripts": "1.0.17",
     "webgme": "^2.24.0"
   },
   "devDependencies": {
@@ -16,9 +15,6 @@
     "chai": "^3.0.0"
   },
   "scripts": {
-    "start": "node app.js",
-    "build": "react-scripts build",
-    "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
+    "start": "node app.js"
   }
 }
