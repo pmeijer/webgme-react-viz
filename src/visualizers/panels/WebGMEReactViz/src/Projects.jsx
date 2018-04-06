@@ -14,15 +14,17 @@ export default class Projects extends Component {
         this.getProjects = this.getProjects.bind(this);
     }
 
+    componentDidMount() {
+        this.getProjects();
+    }
+
     getProjects() {
-        debugger;
         this.props.gmeClient.getProjects({}, (err, projects) => {
             if (err) {
                 console.error(err);
                 return;
             }
 
-            console.log('projects', projects);
             this.setState({projects: projects});
             //this.setState({err, projects});
         });
@@ -31,8 +33,8 @@ export default class Projects extends Component {
     render() {
         const {projects} = this.state;
 
-        let content = (<Button raised color="primary" onClick={this.getProjects}>
-            {"View Projects"}
+        let content = (<Button raised="true" color="primary" onClick={this.getProjects}>
+            {"Reload Projects"}
         </Button>);
 
         if (projects) {
@@ -40,7 +42,7 @@ export default class Projects extends Component {
                 {projects
                     .map(project => {
                         return (
-                            <ListItem button>
+                            <ListItem key={project._id} button>
                                 <ListItemText primary={project.name}/>
                             </ListItem>
                         )

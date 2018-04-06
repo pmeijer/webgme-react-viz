@@ -6,22 +6,18 @@
 define([
     'js/PanelBase/PanelBaseWithHeader',
     'js/PanelManager/IActivePanel',
-    'widgets/WebGMEReactViz/WebGMEReactVizWidget',
-    './WebGMEReactVizControl',
-    'webgme-react-viz/static/js/main.bece31e5',
-    'css!webgme-react-viz/static/css/main.a267f5fe.css'
+    'common/util/guid',
+    './reactViz.bundle',
+    'css!./reactViz.bundle.css'
 ], function (
     PanelBaseWithHeader,
     IActivePanel,
-    WebGMEReactVizWidget,
-    WebGMEReactVizControl,
-    reactApp
+    guid,
+    reactViz
 ) {
     'use strict';
 
-    var WebGMEReactVizPanel;
-
-    WebGMEReactVizPanel = function (layoutManager, params) {
+    function WebGMEReactVizPanel(layoutManager, params) {
         var options = {};
         //set properties from options
         options[PanelBaseWithHeader.OPTIONS.LOGGER_INSTANCE_NAME] = 'WebGMEReactVizPanel';
@@ -33,43 +29,29 @@ define([
 
         this._client = params.client;
 
+        this.id = 'react-viz-id-' + guid();
+
         //initialize UI
         this._initialize();
 
         this.logger.debug('ctor finished');
-    };
+    }
 
     //inherit from PanelBaseWithHeader
     _.extend(WebGMEReactVizPanel.prototype, PanelBaseWithHeader.prototype);
     _.extend(WebGMEReactVizPanel.prototype, IActivePanel.prototype);
 
     WebGMEReactVizPanel.prototype._initialize = function () {
-        var self = this;
-        let id = 'react-viz-id';
-
-        this.$el.prop('id', id);
+        this.$el.prop('id', this.id);
 
         // The $el element does not exist yet.
         setTimeout(()=> {
-            reactApp(id);
+            reactViz(this.id);
             setTimeout(()=> {
                 // This timeout is just to get the spinner..
-                window.onGMEInit(self._client)
+                window.onGMEInit(this._client);
             }, 1000);
         });
-
-
-        // this.widget = new WebGMEReactVizWidget(this.logger, this.$el);
-        //
-        // this.widget.setTitle = function (title) {
-        //     self.setTitle(title);
-        // };
-
-        // this.control = new WebGMEReactVizControl({
-        //     logger: this.logger,
-        //     client: this._client,
-        //     widget: this.widget
-        // });
 
         //this.onActivate();
     };
