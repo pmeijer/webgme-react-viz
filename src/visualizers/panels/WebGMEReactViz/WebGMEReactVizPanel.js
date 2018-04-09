@@ -4,12 +4,14 @@
  */
 
 define([
+    'js/Constants',
     'js/PanelBase/PanelBaseWithHeader',
     'js/PanelManager/IActivePanel',
     'common/util/guid',
     './reactViz.bundle',
     'css!./reactViz.bundle.css'
 ], function (
+    CONSTANTS,
     PanelBaseWithHeader,
     IActivePanel,
     guid,
@@ -17,19 +19,22 @@ define([
 ) {
     'use strict';
 
+    const WebGMEReactPanels = {};
+
     function WebGMEReactVizPanel(layoutManager, params) {
-        var options = {};
+        const options = {};
         //set properties from options
         options[PanelBaseWithHeader.OPTIONS.LOGGER_INSTANCE_NAME] = 'WebGMEReactVizPanel';
         options[PanelBaseWithHeader.OPTIONS.FLOATING_TITLE] = true;
 
-
         //call parent's constructor
         PanelBaseWithHeader.apply(this, [options, layoutManager]);
 
+        WebGMEGlobal.WebGMEReactPanels = WebGMEReactPanels;
+
         this._client = params.client;
 
-        this.id = 'react-viz-id-' + guid();
+        this.appId = 'react-viz-id-' + guid();
 
         //initialize UI
         this._initialize();
@@ -42,18 +47,18 @@ define([
     _.extend(WebGMEReactVizPanel.prototype, IActivePanel.prototype);
 
     WebGMEReactVizPanel.prototype._initialize = function () {
-        this.$el.prop('id', this.id);
+        this.$el.prop('id', this.appId);
+
+        WebGMEReactPanels[this.appId] = {
+            client: this._client,
+            initialized: false,
+        };
 
         // The $el element does not exist yet.
         setTimeout(()=> {
-            reactViz(this.id);
-            setTimeout(()=> {
-                // This timeout is just to get the spinner..
-                window.onGMEInit(this._client);
-            }, 1000);
+            reactViz(this.appId);
+            this.onActivate();
         });
-
-        //this.onActivate();
     };
 
     /* OVERRIDE FROM WIDGET-WITH-HEADER */
@@ -61,7 +66,6 @@ define([
     WebGMEReactVizPanel.prototype.onReadOnlyChanged = function (isReadOnly) {
         //apply parent's onReadOnlyChanged
         PanelBaseWithHeader.prototype.onReadOnlyChanged.call(this, isReadOnly);
-
     };
 
     WebGMEReactVizPanel.prototype.onResize = function (width, height) {
@@ -69,28 +73,40 @@ define([
         // this.widget.onWidgetContainerResize(width, height);
     };
 
+    WebGMEReactVizPanel.prototype._stateActiveObjectChanged = function (model, activeObjectId) {
+        console.log(WebGMEReactPanels[this.appId].initialized);
+        if (this._currentNodeId === activeObjectId) {
+            // The same node selected as before - do not trigger
+        } else {
+            //this.selectedObjectChanged(activeObjectId);
+        }
+    };
+
     /* * * * * * * * Visualizer life cycle callbacks * * * * * * * */
+    WebGMEReactVizPanel.prototype._attachClientEventListeners = function () {
+        this._detachClientEventListeners();
+        WebGMEGlobal.State.on('change:' + CONSTANTS.STATE_ACTIVE_OBJECT, this._stateActiveObjectChanged, this);
+    };
+
+    WebGMEReactVizPanel.prototype._detachClientEventListeners = function () {
+        WebGMEGlobal.State.off('change:' + CONSTANTS.STATE_ACTIVE_OBJECT, this._stateActiveObjectChanged);
+    };
+
     WebGMEReactVizPanel.prototype.destroy = function () {
-        // this.control.destroy();
-        // this.widget.destroy();
-        //
+        this._detachClientEventListeners();
         PanelBaseWithHeader.prototype.destroy.call(this);
-        // WebGMEGlobal.KeyboardManager.setListener(undefined);
-        // WebGMEGlobal.Toolbar.refresh();
     };
 
     WebGMEReactVizPanel.prototype.onActivate = function () {
-        // this.widget.onActivate();
-        // this.control.onActivate();
-        // WebGMEGlobal.KeyboardManager.setListener(this.widget);
-        // WebGMEGlobal.Toolbar.refresh();
+        this._attachClientEventListeners();
+        console.log('onActivate', WebGMEReactPanels[this.appId].initialized);
+        if (typeof this._currentNodeId === 'string') {
+            WebGMEGlobal.State.registerActiveObject(this._currentNodeId, {suppressVisualizerFromNode: true});
+        }
     };
 
     WebGMEReactVizPanel.prototype.onDeactivate = function () {
-        // this.widget.onDeactivate();
-        // this.control.onDeactivate();
-        // WebGMEGlobal.KeyboardManager.setListener(undefined);
-        // WebGMEGlobal.Toolbar.refresh();
+        this._detachClientEventListeners();
     };
 
     return WebGMEReactVizPanel;

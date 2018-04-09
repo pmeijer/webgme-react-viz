@@ -1,3 +1,7 @@
+/**
+ * In this setup css is supported via the css-loader.
+ */
+
 .App {
   text-align: center;
 }

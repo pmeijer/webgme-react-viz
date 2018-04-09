@@ -295,11 +295,11 @@ if (process.env.NODE_ENV !== 'production') {
   // By explicitly using `prop-types` you are opting into new development behavior.
   // http://fb.me/prop-types-in-prod
   var throwOnDirectAccess = true;
-  module.exports = __webpack_require__(202)(isValidElement, throwOnDirectAccess);
+  module.exports = __webpack_require__(200)(isValidElement, throwOnDirectAccess);
 } else {
   // By explicitly using `prop-types` you are opting into new production behavior.
   // http://fb.me/prop-types-in-prod
-  module.exports = __webpack_require__(203)();
+  module.exports = __webpack_require__(201)();
 }
 
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
@@ -13520,7 +13520,26 @@ var _ReactViz2 = _interopRequireDefault(_ReactViz);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-_reactDom2.default.render(_react2.default.createElement(_ReactViz2.default, null), document.getElementById(VISUALIZER_INSTANCE_ID)); /*globals VISUALIZER_INSTANCE_ID*/
+// FIXME: This is just a temporary placeholder..
+window.WebGMEGlobal.WebGMEReactPanels[VISUALIZER_INSTANCE_ID].stateHandler = {
+    destroy: function destroy() {
+        console.log('Goodbye..');
+    },
+    activeObjectChanged: function activeObjectChanged(nodeId) {
+        console.log('There\'s a new node in town', nodeId);
+    },
+    setActiveObject: function setActiveObject(nodeId) {
+        console.log('New node', nodeId);
+    }
+}; /*globals VISUALIZER_INSTANCE_ID, WebGMEGlobal*/
+/**
+ * This file is specific for the wrapper in webgme. Note how the VISUALIZER_INSTANCE_ID
+ * is defined in the wrapper inside webpack.config.js and later passed by the WebGMEReactVizPanel.
+ */
+
+window.WebGMEGlobal.WebGMEReactPanels[VISUALIZER_INSTANCE_ID].initialized = true;
+
+_reactDom2.default.render(_react2.default.createElement(_ReactViz2.default, { gmeClient: window.WebGMEGlobal.WebGMEReactPanels[VISUALIZER_INSTANCE_ID].client }), document.getElementById(VISUALIZER_INSTANCE_ID));
 
 /***/ }),
 /* 189 */
@@ -32081,9 +32100,13 @@ var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
 
-__webpack_require__(200);
+var _propTypes = __webpack_require__(2);
 
-var _Projects = __webpack_require__(201);
+var _propTypes2 = _interopRequireDefault(_propTypes);
+
+__webpack_require__(202);
+
+var _Projects = __webpack_require__(203);
 
 var _Projects2 = _interopRequireDefault(_Projects);
 
@@ -32101,27 +32124,18 @@ var ReactViz = function (_Component) {
     function ReactViz(props) {
         _classCallCheck(this, ReactViz);
 
-        var _this = _possibleConstructorReturn(this, (ReactViz.__proto__ || Object.getPrototypeOf(ReactViz)).call(this, props));
-
-        window.onGMEInit = function (client) {
-            _this.setState({ initialConnect: true, gmeClient: client });
-        };
-
-        _this.state = {
-            initialConnect: false
-        };
-        return _this;
+        return _possibleConstructorReturn(this, (ReactViz.__proto__ || Object.getPrototypeOf(ReactViz)).call(this, props));
     }
 
     _createClass(ReactViz, [{
         key: 'render',
         value: function render() {
-            var initialConnect = this.state.initialConnect;
+            var gmeClient = this.props.gmeClient;
 
             var content = _react2.default.createElement('div', null);
 
-            if (initialConnect) {
-                content = _react2.default.createElement(_Projects2.default, { gmeClient: this.state.gmeClient });
+            if (gmeClient) {
+                content = _react2.default.createElement(_Projects2.default, { gmeClient: this.props.gmeClient });
             }
 
             return _react2.default.createElement(
@@ -32130,11 +32144,11 @@ var ReactViz = function (_Component) {
                 _react2.default.createElement(
                     'header',
                     { className: 'App-header' },
-                    _react2.default.createElement('img', { src: '/assets/DecoratorSVG/Router.svg', className: initialConnect ? "App-logo" : "App-logo-loading", alt: 'logo' }),
+                    _react2.default.createElement('img', { src: '/assets/DecoratorSVG/Router.svg', className: this.props.gmeClient ? "App-logo" : "App-logo-loading", alt: 'logo' }),
                     _react2.default.createElement(
                         'h1',
                         { className: 'App-title' },
-                        initialConnect ? "Visualizer loaded" : "Loading Visualizer..."
+                        this.props.gmeClient ? "Visualizer loaded" : "Loading Visualizer..."
                     )
                 ),
                 content
@@ -32145,128 +32159,13 @@ var ReactViz = function (_Component) {
     return ReactViz;
 }(_react.Component);
 
+ReactViz.propTypes = {
+    gmeClient: _propTypes2.default.object
+};
 exports.default = ReactViz;
 
 /***/ }),
 /* 200 */
-/***/ (function(module, exports) {
-
-// removed by extract-text-webpack-plugin
-
-/***/ }),
-/* 201 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _react = __webpack_require__(0);
-
-var _react2 = _interopRequireDefault(_react);
-
-var _propTypes = __webpack_require__(2);
-
-var _propTypes2 = _interopRequireDefault(_propTypes);
-
-var _materialUi = __webpack_require__(204);
-
-var _List = __webpack_require__(112);
-
-var _List2 = _interopRequireDefault(_List);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var Projects = function (_Component) {
-    _inherits(Projects, _Component);
-
-    function Projects(props) {
-        _classCallCheck(this, Projects);
-
-        var _this = _possibleConstructorReturn(this, (Projects.__proto__ || Object.getPrototypeOf(Projects)).call(this, props));
-
-        _this.state = {
-            err: null,
-            projects: null
-        };
-
-        _this.getProjects = _this.getProjects.bind(_this);
-        return _this;
-    }
-
-    _createClass(Projects, [{
-        key: 'componentDidMount',
-        value: function componentDidMount() {
-            this.getProjects();
-        }
-    }, {
-        key: 'getProjects',
-        value: function getProjects() {
-            var _this2 = this;
-
-            this.props.gmeClient.getProjects({}, function (err, projects) {
-                if (err) {
-                    console.error(err);
-                    return;
-                }
-
-                _this2.setState({ projects: projects });
-                //this.setState({err, projects});
-            });
-        }
-    }, {
-        key: 'render',
-        value: function render() {
-            var projects = this.state.projects;
-
-
-            var content = _react2.default.createElement(
-                _materialUi.Button,
-                { raised: 'true', color: 'primary', onClick: this.getProjects },
-                "Reload Projects"
-            );
-
-            if (projects) {
-                content = _react2.default.createElement(
-                    _List2.default,
-                    null,
-                    projects.map(function (project) {
-                        return _react2.default.createElement(
-                            _List.ListItem,
-                            { key: project._id, button: true },
-                            _react2.default.createElement(_List.ListItemText, { primary: project.name })
-                        );
-                    })
-                );
-            }
-
-            return content;
-        }
-    }]);
-
-    return Projects;
-}(_react.Component);
-
-exports.default = Projects;
-
-
-Projects.propTypes = {
-    gmeClient: _propTypes2.default.object
-};
-
-/***/ }),
-/* 202 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32816,7 +32715,7 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
-/* 203 */
+/* 201 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32879,6 +32778,124 @@ module.exports = function() {
   return ReactPropTypes;
 };
 
+
+/***/ }),
+/* 202 */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 203 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = __webpack_require__(0);
+
+var _react2 = _interopRequireDefault(_react);
+
+var _propTypes = __webpack_require__(2);
+
+var _propTypes2 = _interopRequireDefault(_propTypes);
+
+var _materialUi = __webpack_require__(204);
+
+var _List = __webpack_require__(112);
+
+var _List2 = _interopRequireDefault(_List);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Projects = function (_Component) {
+    _inherits(Projects, _Component);
+
+    function Projects(props) {
+        _classCallCheck(this, Projects);
+
+        var _this = _possibleConstructorReturn(this, (Projects.__proto__ || Object.getPrototypeOf(Projects)).call(this, props));
+
+        _this.state = {
+            err: null,
+            projects: null
+        };
+
+        _this.getProjects = _this.getProjects.bind(_this);
+        return _this;
+    }
+
+    _createClass(Projects, [{
+        key: 'componentDidMount',
+        value: function componentDidMount() {
+            this.getProjects();
+        }
+    }, {
+        key: 'getProjects',
+        value: function getProjects() {
+            var _this2 = this;
+
+            this.props.gmeClient.getProjects({}, function (err, projects) {
+                if (err) {
+                    console.error(err);
+                    return;
+                }
+
+                _this2.setState({ projects: projects });
+                //this.setState({err, projects});
+            });
+        }
+    }, {
+        key: 'render',
+        value: function render() {
+            var projects = this.state.projects;
+
+
+            var content = _react2.default.createElement(
+                _materialUi.Button,
+                { raised: 'true', color: 'primary', onClick: this.getProjects },
+                "Reload Projects"
+            );
+
+            if (projects) {
+                content = _react2.default.createElement(
+                    _List2.default,
+                    null,
+                    projects.map(function (project) {
+                        return _react2.default.createElement(
+                            _List.ListItem,
+                            { key: project._id, button: true },
+                            _react2.default.createElement(_List.ListItemText, { primary: project.name })
+                        );
+                    })
+                );
+            }
+
+            return content;
+        }
+    }]);
+
+    return Projects;
+}(_react.Component);
+
+exports.default = Projects;
+
+
+Projects.propTypes = {
+    gmeClient: _propTypes2.default.object
+};
 
 /***/ }),
 /* 204 */

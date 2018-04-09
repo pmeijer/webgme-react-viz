@@ -1,7 +1,10 @@
-# react-viz
+# webgme-react-viz
+This is a template repository for wrapping a react bundle into a webgme visualizer.
+
+
 ## Installation
 First, install the react-viz following:
-- [NodeJS](https://nodejs.org/en/) (v4.x.x recommended)
+- [NodeJS](https://nodejs.org/en/) (v8.x.x recommended)
 - [MongoDB](https://www.mongodb.com/)
 
 Second, start mongodb locally by running the `mongod` executable in your mongodb installation (you may need to create a `data` directory or set `--dbpath`).
