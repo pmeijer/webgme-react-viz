@@ -1,3 +1,7 @@
+/**
+ *
+ */
+
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {Provider} from 'react-redux';
@@ -22,24 +26,16 @@ export default class ReactViz extends Component {
 
         const {stateMediator} = this.props;
 
-        stateMediator.getActiveNode = () => {
-            return this.store.getState().activeNode;
-        };
-
         stateMediator.onActiveNodeChange = (activeNode) => {
-            console.log('onActiveNodeChange', activeNode);
             this.store.dispatch(setActiveNode(activeNode));
         };
 
         stateMediator.onActiveSelectionChange = (activeSelection) => {
-            console.log('onActiveSelectionChange', activeSelection);
             this.store.dispatch(setActiveSelection(activeSelection));
         };
 
         this.store.subscribe(() => {
             const state = this.store.getState();
-            console.log('store.subscribe, state:', state);
-
             // TODO: Do we need to filter the state or will BackBone take care of this?
             stateMediator.setActiveNode(state.activeNode);
             stateMediator.setActiveSelection(state.activeSelection);
@@ -60,11 +56,11 @@ export default class ReactViz extends Component {
                     <header className="App-header">
                         <img
                             src={'/assets/DecoratorSVG/Router.svg'}
-                            className={this.props.gmeClient ? "App-logo" : "App-logo-loading"}
+                            className={gmeClient ? "App-logo" : "App-logo-loading"}
                             alt="logo"
                         />
                         <h1 className="App-title">
-                            {this.props.gmeClient ? "Visualizer loaded" : "Loading Visualizer..."}
+                            {gmeClient ? "Visualizer loaded" : "Loading Visualizer..."}
                         </h1>
                     </header>
                     {content}

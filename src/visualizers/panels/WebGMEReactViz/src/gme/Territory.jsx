@@ -9,23 +9,23 @@ import PropTypes from 'prop-types';
 export default class Territory extends Component {
     static propTypes = {
         gmeClient: PropTypes.object.isRequired,
+        onUpdate: PropTypes.func.isRequired,
         territory: PropTypes.object,
-        onUpdate: PropTypes.func,
-        onlyActualEvents: PropTypes.bool.isRequired,
+
+        onlyActualEvents: PropTypes.bool,
+        reuseTerritory: PropTypes.bool,
     };
 
     static defaultProps = {
         territory: null,
-        onUpdate: null,
+        onlyActualEvents: true,
+        reuseTerritory: true,
     };
 
+    getEventHandler() {
+        const {onUpdate, onlyActualEvents, gmeClient} = this.props;
 
-    componentDidMount() {
-        const {
-            gmeClient, territory, onUpdate, onlyActualEvents,
-        } = this.props;
-
-        this.uiId = gmeClient.addUI(null, (events) => {
+        return (events) => {
             const load = [];
             const update = [];
             const unload = [];
@@ -47,10 +47,17 @@ export default class Territory extends Component {
                 }
             });
 
-            if (onUpdate && (!onlyActualEvents || load.length > 0 || update.length > 0 || unload.length > 0)) {
+            if (!onlyActualEvents || load.length > 0 || update.length > 0 || unload.length > 0) {
                 onUpdate(hash, load, update, unload);
             }
-        });
+        };
+    };
+
+
+    componentDidMount() {
+        const {gmeClient, territory} = this.props;
+
+        this.uiId = gmeClient.addUI(null, this.getEventHandler());
 
         if (territory) {
             gmeClient.updateTerritory(this.uiId, territory);
@@ -59,9 +66,15 @@ export default class Territory extends Component {
 
     componentWillReceiveProps(nextProps) {
         const {gmeClient} = nextProps;
-        const {territory} = this.props;
+        const {territory, reuseTerritory} = this.props;
 
         if (JSON.stringify(territory) !== JSON.stringify(nextProps.territory)) {
+
+            if (!reuseTerritory) {
+                gmeClient.removeUI(this.uiId);
+                this.uiId = gmeClient.addUI(null, this.getEventHandler());
+            }
+
             gmeClient.updateTerritory(this.uiId, nextProps.territory || {});
         }
     }

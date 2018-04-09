@@ -30,7 +30,8 @@ export default class ChildrenList extends Component {
             this.setState({
                 territory: {
                     [activeNode]: {children: 1}
-                }
+                },
+                children: {}
             });
         }
     };
@@ -45,11 +46,11 @@ export default class ChildrenList extends Component {
     }
 
     handleEvents = (hash, loads, updates, unloads) => {
-        const {gmeClient} = this.props;
+        const {gmeClient, activeNode} = this.props;
         const updateDesc = {};
 
         loads.forEach((nodeId) => {
-            if (nodeId !== this.props.activeNode) {
+            if (nodeId !== activeNode) {
                 const nodeObj = gmeClient.getNode(nodeId);
 
                 updateDesc[nodeId] = {
@@ -61,7 +62,7 @@ export default class ChildrenList extends Component {
         });
 
         updates.forEach((nodeId) => {
-            if (nodeId !== this.props.activeNode) {
+            if (nodeId !== activeNode) {
                 const nodeObj = gmeClient.getNode(nodeId);
 
                 updateDesc[nodeId] = {
@@ -72,7 +73,7 @@ export default class ChildrenList extends Component {
             }
         });
 
-        updateDesc.$unset = unloads.filter(nodeId => nodeId !== this.props.activeNode);
+        updateDesc.$unset = unloads.filter(nodeId => nodeId !== activeNode);
 
         this.setState({children: update(this.state.children, updateDesc)});
     };
@@ -80,6 +81,12 @@ export default class ChildrenList extends Component {
     onListItemClick = (id) => {
         return (/*e*/) => {
             this.props.setActiveSelection([id]);
+        };
+    };
+
+    onListItemDoubleClick = (id) => {
+        return (/*e*/) => {
+            this.props.setActiveNode(id);
         };
     };
 
@@ -91,7 +98,12 @@ export default class ChildrenList extends Component {
             {Object.keys(children)
                 .map(id => {
                     return (
-                        <ListItem key={id} button onClick={this.onListItemClick(id)}>
+                        <ListItem
+                            key={id}
+                            button
+                            onClick={this.onListItemClick(id)}
+                            onDoubleClick={this.onListItemDoubleClick(id)}
+                        >
                             {activeSelection.includes(id) ? <ListItemIcon><StarIcon/></ListItemIcon> : null}
                             <ListItemText primary={children[id].name}/>
                         </ListItem>
@@ -107,6 +119,7 @@ export default class ChildrenList extends Component {
                     territory={territory}
                     onUpdate={this.handleEvents}
                     onlyActualEvents={true}
+                    reuseTerritory={false}
                 />
                 {content}
             </div>);

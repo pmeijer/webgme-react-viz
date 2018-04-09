@@ -24125,7 +24125,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
 
 var ReactViz = function (_Component) {
     _inherits(ReactViz, _Component);
@@ -24140,24 +24142,16 @@ var ReactViz = function (_Component) {
         var stateMediator = _this.props.stateMediator;
 
 
-        stateMediator.getActiveNode = function () {
-            return _this.store.getState().activeNode;
-        };
-
         stateMediator.onActiveNodeChange = function (activeNode) {
-            console.log('onActiveNodeChange', activeNode);
             _this.store.dispatch((0, _actions.setActiveNode)(activeNode));
         };
 
         stateMediator.onActiveSelectionChange = function (activeSelection) {
-            console.log('onActiveSelectionChange', activeSelection);
             _this.store.dispatch((0, _actions.setActiveSelection)(activeSelection));
         };
 
         _this.store.subscribe(function () {
             var state = _this.store.getState();
-            console.log('store.subscribe, state:', state);
-
             // TODO: Do we need to filter the state or will BackBone take care of this?
             stateMediator.setActiveNode(state.activeNode);
             stateMediator.setActiveSelection(state.activeSelection);
@@ -24187,13 +24181,13 @@ var ReactViz = function (_Component) {
                         { className: 'App-header' },
                         _react2.default.createElement('img', {
                             src: '/assets/DecoratorSVG/Router.svg',
-                            className: this.props.gmeClient ? "App-logo" : "App-logo-loading",
+                            className: gmeClient ? "App-logo" : "App-logo-loading",
                             alt: 'logo'
                         }),
                         _react2.default.createElement(
                             'h1',
                             { className: 'App-title' },
-                            this.props.gmeClient ? "Visualizer loaded" : "Loading Visualizer..."
+                            gmeClient ? "Visualizer loaded" : "Loading Visualizer..."
                         )
                     ),
                     content
@@ -26140,12 +26134,14 @@ var ChildrenList = function (_Component) {
         };
 
         _this.handleEvents = function (hash, loads, updates, unloads) {
-            var gmeClient = _this.props.gmeClient;
+            var _this$props = _this.props,
+                gmeClient = _this$props.gmeClient,
+                activeNode = _this$props.activeNode;
 
             var updateDesc = {};
 
             loads.forEach(function (nodeId) {
-                if (nodeId !== _this.props.activeNode) {
+                if (nodeId !== activeNode) {
                     var nodeObj = gmeClient.getNode(nodeId);
 
                     updateDesc[nodeId] = {
@@ -26157,7 +26153,7 @@ var ChildrenList = function (_Component) {
             });
 
             updates.forEach(function (nodeId) {
-                if (nodeId !== _this.props.activeNode) {
+                if (nodeId !== activeNode) {
                     var nodeObj = gmeClient.getNode(nodeId);
 
                     updateDesc[nodeId] = {
@@ -26169,7 +26165,7 @@ var ChildrenList = function (_Component) {
             });
 
             updateDesc.$unset = unloads.filter(function (nodeId) {
-                return nodeId !== _this.props.activeNode;
+                return nodeId !== activeNode;
             });
 
             _this.setState({ children: (0, _immutabilityHelper2.default)(_this.state.children, updateDesc) });
@@ -26178,6 +26174,12 @@ var ChildrenList = function (_Component) {
         _this.onListItemClick = function (id) {
             return function () /*e*/{
                 _this.props.setActiveSelection([id]);
+            };
+        };
+
+        _this.onListItemDoubleClick = function (id) {
+            return function () /*e*/{
+                _this.props.setActiveNode(id);
             };
         };
 
@@ -26192,7 +26194,8 @@ var ChildrenList = function (_Component) {
 
             if (activeNode !== this.props.activeNode) {
                 this.setState({
-                    territory: _defineProperty({}, activeNode, { children: 1 })
+                    territory: _defineProperty({}, activeNode, { children: 1 }),
+                    children: {}
                 });
             }
         }
@@ -26222,7 +26225,12 @@ var ChildrenList = function (_Component) {
                 Object.keys(children).map(function (id) {
                     return _react2.default.createElement(
                         _List.ListItem,
-                        { key: id, button: true, onClick: _this2.onListItemClick(id) },
+                        {
+                            key: id,
+                            button: true,
+                            onClick: _this2.onListItemClick(id),
+                            onDoubleClick: _this2.onListItemDoubleClick(id)
+                        },
                         activeSelection.includes(id) ? _react2.default.createElement(
                             _List.ListItemIcon,
                             null,
@@ -26240,7 +26248,8 @@ var ChildrenList = function (_Component) {
                     gmeClient: this.props.gmeClient,
                     territory: territory,
                     onUpdate: this.handleEvents,
-                    onlyActualEvents: true
+                    onlyActualEvents: true,
+                    reuseTerritory: false
                 }),
                 content
             );
@@ -36272,16 +36281,15 @@ var Territory = function (_Component) {
     }
 
     _createClass(Territory, [{
-        key: 'componentDidMount',
-        value: function componentDidMount() {
+        key: 'getEventHandler',
+        value: function getEventHandler() {
             var _props = this.props,
-                gmeClient = _props.gmeClient,
-                territory = _props.territory,
                 onUpdate = _props.onUpdate,
-                onlyActualEvents = _props.onlyActualEvents;
+                onlyActualEvents = _props.onlyActualEvents,
+                gmeClient = _props.gmeClient;
 
 
-            this.uiId = gmeClient.addUI(null, function (events) {
+            return function (events) {
                 var load = [];
                 var update = [];
                 var unload = [];
@@ -36303,10 +36311,20 @@ var Territory = function (_Component) {
                     }
                 });
 
-                if (onUpdate && (!onlyActualEvents || load.length > 0 || update.length > 0 || unload.length > 0)) {
+                if (!onlyActualEvents || load.length > 0 || update.length > 0 || unload.length > 0) {
                     onUpdate(hash, load, update, unload);
                 }
-            });
+            };
+        }
+    }, {
+        key: 'componentDidMount',
+        value: function componentDidMount() {
+            var _props2 = this.props,
+                gmeClient = _props2.gmeClient,
+                territory = _props2.territory;
+
+
+            this.uiId = gmeClient.addUI(null, this.getEventHandler());
 
             if (territory) {
                 gmeClient.updateTerritory(this.uiId, territory);
@@ -36316,10 +36334,18 @@ var Territory = function (_Component) {
         key: 'componentWillReceiveProps',
         value: function componentWillReceiveProps(nextProps) {
             var gmeClient = nextProps.gmeClient;
-            var territory = this.props.territory;
+            var _props3 = this.props,
+                territory = _props3.territory,
+                reuseTerritory = _props3.reuseTerritory;
 
 
             if (JSON.stringify(territory) !== JSON.stringify(nextProps.territory)) {
+
+                if (!reuseTerritory) {
+                    gmeClient.removeUI(this.uiId);
+                    this.uiId = gmeClient.addUI(null, this.getEventHandler());
+                }
+
                 gmeClient.updateTerritory(this.uiId, nextProps.territory || {});
             }
         }
@@ -36343,13 +36369,16 @@ var Territory = function (_Component) {
 
 Territory.propTypes = {
     gmeClient: _propTypes2.default.object.isRequired,
+    onUpdate: _propTypes2.default.func.isRequired,
     territory: _propTypes2.default.object,
-    onUpdate: _propTypes2.default.func,
-    onlyActualEvents: _propTypes2.default.bool.isRequired
+
+    onlyActualEvents: _propTypes2.default.bool,
+    reuseTerritory: _propTypes2.default.bool
 };
 Territory.defaultProps = {
     territory: null,
-    onUpdate: null
+    onlyActualEvents: true,
+    reuseTerritory: true
 };
 exports.default = Territory;
 
