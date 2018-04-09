@@ -8,7 +8,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import ReactViz from './ReactViz';
-// FIXME: This is just a temporary placeholder..
+
+// FIXME: This is just a temporary placeholder - this will be a mediator between WebGMEs back-bone
+// FIXME: and a redux store.
 window.WebGMEGlobal.WebGMEReactPanels[VISUALIZER_INSTANCE_ID].stateHandler = {
     destroy: () => {
         console.log('Goodbye..')

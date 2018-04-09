@@ -48,13 +48,29 @@ define([
 
     WebGMEReactVizPanel.prototype._initialize = function () {
         this.$el.prop('id', this.appId);
+        const initialState = {
+            // The UI state, these can be modified by the react app as well.
+            activeObject: WebGMEGlobal.State.getActiveObject(),
+            activeSelection: WebGMEGlobal.State.getActiveSelection(),
+            activeTab: WebGMEGlobal.State.getActiveTab(),
+            activeAspect: WebGMEGlobal.State.getActiveAspect(),
+
+            // Panel state (are passed in by the e.g. split-panel)
+            isActive: false,
+            isReadOnly: false,
+            size: {
+                width: 0,
+                height: 0,
+            },
+        };
 
         WebGMEReactPanels[this.appId] = {
             client: this._client,
             initialized: false,
+            initialState
         };
 
-        // The $el element does not exist yet.
+        // The $el element does not exist in the DOM yet.
         setTimeout(()=> {
             reactViz(this.appId);
             this.onActivate();
@@ -94,6 +110,8 @@ define([
 
     WebGMEReactVizPanel.prototype.destroy = function () {
         this._detachClientEventListeners();
+        WebGMEReactPanels[this.appId].destroy();
+        delete WebGMEReactPanels[this.appId];
         PanelBaseWithHeader.prototype.destroy.call(this);
     };
 

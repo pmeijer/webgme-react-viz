@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
 import './App.css';
-import Projects from './Projects';
+import ChildrenList from './ChildrenList';
 
 export default class ReactViz extends Component {
 
@@ -19,7 +19,8 @@ export default class ReactViz extends Component {
         let content = <div/>;
 
         if (gmeClient) {
-            content = <Projects gmeClient={this.props.gmeClient}/>;
+            // TODO: ChildrenList should get activeNode/Selection from the redux-store.
+            content = <ChildrenList gmeClient={this.props.gmeClient} activeNode={""} activeSelection={[]}/>;
         }
 
         return (
