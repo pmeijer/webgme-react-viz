@@ -2,9 +2,10 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import update from 'immutability-helper';
 
-import List, {ListItem, ListItemText} from 'material-ui/List';
+import List, {ListItem, ListItemText, ListItemIcon} from 'material-ui/List';
+import StarIcon from '@material-ui/icons/Star';
 
-import Territory from './gme/Territory';
+import Territory from '../gme/Territory';
 
 export default class ChildrenList extends Component {
     static propTypes = {
@@ -76,14 +77,22 @@ export default class ChildrenList extends Component {
         this.setState({children: update(this.state.children, updateDesc)});
     };
 
+    onListItemClick = (id) => {
+        return (/*e*/) => {
+            this.props.setActiveSelection([id]);
+        };
+    };
+
     render() {
         const {children, territory} = this.state;
+        const {activeSelection} = this.props;
 
         const content = (<List>
             {Object.keys(children)
                 .map(id => {
                     return (
-                        <ListItem key={id} button>
+                        <ListItem key={id} button onClick={this.onListItemClick(id)}>
+                            {activeSelection.includes(id) ? <ListItemIcon><StarIcon/></ListItemIcon> : null}
                             <ListItemText primary={children[id].name}/>
                         </ListItem>
                     )

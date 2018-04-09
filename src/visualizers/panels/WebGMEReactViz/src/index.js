@@ -9,21 +9,13 @@ import ReactDOM from 'react-dom';
 
 import ReactViz from './ReactViz';
 
-// FIXME: This is just a temporary placeholder - this will be a mediator between WebGMEs back-bone
-// FIXME: and a redux store.
-window.WebGMEGlobal.WebGMEReactPanels[VISUALIZER_INSTANCE_ID].stateHandler = {
-    destroy: () => {
-        console.log('Goodbye..')
-    },
-    activeObjectChanged: (nodeId) => {
-        console.log('There\'s a new node in town', nodeId);
-    },
-    setActiveObject: (nodeId) => {
-        console.log('New node', nodeId);
-    }
-};
-
 window.WebGMEGlobal.WebGMEReactPanels[VISUALIZER_INSTANCE_ID].initialized = true;
 
-ReactDOM.render(<ReactViz gmeClient={window.WebGMEGlobal.WebGMEReactPanels[VISUALIZER_INSTANCE_ID].client}/>,
-    document.getElementById(VISUALIZER_INSTANCE_ID));
+ReactDOM.render(
+    <ReactViz
+        gmeClient={window.WebGMEGlobal.WebGMEReactPanels[VISUALIZER_INSTANCE_ID].client}
+        stateMediator={window.WebGMEGlobal.WebGMEReactPanels[VISUALIZER_INSTANCE_ID].stateMediator}
+        initialState={window.WebGMEGlobal.WebGMEReactPanels[VISUALIZER_INSTANCE_ID].initialState}
+    />,
+    document.getElementById(VISUALIZER_INSTANCE_ID)
+);
