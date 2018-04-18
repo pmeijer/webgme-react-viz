@@ -22,6 +22,36 @@ export default class Territory extends Component {
         reuseTerritory: true,
     };
 
+    componentDidMount() {
+        const {gmeClient, territory} = this.props;
+
+        this.uiId = gmeClient.addUI(null, this.getEventHandler());
+
+        if (territory) {
+            gmeClient.updateTerritory(this.uiId, territory);
+        }
+    }
+
+    componentWillReceiveProps(nextProps) {
+        const {gmeClient} = nextProps;
+        const {territory, reuseTerritory} = this.props;
+
+        if (JSON.stringify(territory) !== JSON.stringify(nextProps.territory)) {
+            if (!reuseTerritory) {
+                gmeClient.removeUI(this.uiId);
+                this.uiId = gmeClient.addUI(null, this.getEventHandler());
+            }
+
+            gmeClient.updateTerritory(this.uiId, nextProps.territory || {});
+        }
+    }
+
+    componentWillUnmount() {
+        const {gmeClient} = this.props;
+
+        gmeClient.removeUI(this.uiId);
+    }
+
     getEventHandler() {
         const {onUpdate, onlyActualEvents, gmeClient} = this.props;
 
@@ -51,38 +81,6 @@ export default class Territory extends Component {
                 onUpdate(hash, load, update, unload);
             }
         };
-    };
-
-
-    componentDidMount() {
-        const {gmeClient, territory} = this.props;
-
-        this.uiId = gmeClient.addUI(null, this.getEventHandler());
-
-        if (territory) {
-            gmeClient.updateTerritory(this.uiId, territory);
-        }
-    }
-
-    componentWillReceiveProps(nextProps) {
-        const {gmeClient} = nextProps;
-        const {territory, reuseTerritory} = this.props;
-
-        if (JSON.stringify(territory) !== JSON.stringify(nextProps.territory)) {
-
-            if (!reuseTerritory) {
-                gmeClient.removeUI(this.uiId);
-                this.uiId = gmeClient.addUI(null, this.getEventHandler());
-            }
-
-            gmeClient.updateTerritory(this.uiId, nextProps.territory || {});
-        }
-    }
-
-    componentWillUnmount() {
-        const {gmeClient} = this.props;
-
-        gmeClient.removeUI(this.uiId);
     }
 
     uiId = null;

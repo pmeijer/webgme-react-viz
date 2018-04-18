@@ -1,23 +1,17 @@
-/**
- *
- */
-
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {Provider} from 'react-redux';
 import {createStore} from 'redux';
 
-import './App.css';
 import reducers from './containers/reducers';
-import {setActiveNode, setActiveSelection} from './containers/actions';
+import {setActiveNode, setActiveSelection, setIsActivePanel, setReadOnly, setPanelSize} from './containers/actions';
 import ChildrenList from './containers/ChildrenList';
 
 export default class ReactViz extends Component {
-
     static propTypes = {
-        gmeClient: PropTypes.object,
-        stateMediator: PropTypes.object,
-        initialState: PropTypes.object,
+        gmeClient: PropTypes.object.isRequired,
+        stateMediator: PropTypes.object.isRequired,
+        initialState: PropTypes.object.isRequired,
     };
 
     constructor(props) {
@@ -32,6 +26,22 @@ export default class ReactViz extends Component {
 
         stateMediator.onActiveSelectionChange = (activeSelection) => {
             this.store.dispatch(setActiveSelection(activeSelection));
+        };
+
+        stateMediator.onActivate = () => {
+            this.store.dispatch(setIsActivePanel(true));
+        };
+
+        stateMediator.onDeactivate = () => {
+            this.store.dispatch(setIsActivePanel(false));
+        };
+
+        stateMediator.onReadOnlyChanged = (readOnly) => {
+            this.store.dispatch(setReadOnly(readOnly));
+        };
+
+        stateMediator.onResize = (width, height) => {
+            this.store.dispatch(setPanelSize({width, height}));
         };
 
         this.store.subscribe(() => {

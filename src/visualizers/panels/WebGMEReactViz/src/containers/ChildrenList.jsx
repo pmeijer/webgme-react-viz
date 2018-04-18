@@ -7,6 +7,11 @@ import ChildrenList from '../components/ChildrenList';
 const mapStateToProps = state => ({
     activeNode: state.activeNode,
     activeSelection: state.activeSelection,
+
+    readOnly: state.readOnly,
+    isActivePanel: state.isActivePanel,
+    width: state.panelSize.width,
+    height: state.panelSize.height,
 });
 
 const mapDispatchToProps = dispatch => ({

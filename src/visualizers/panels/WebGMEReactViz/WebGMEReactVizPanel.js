@@ -5,13 +5,13 @@
 
 define([
     'js/Constants',
-    'js/PanelBase/PanelBaseWithHeader',
+    'js/PanelBase/PanelBase',
     'js/PanelManager/IActivePanel',
     'common/util/guid',
     './reactViz.bundle',
     'css!./reactViz.bundle.css'
 ], function (CONSTANTS,
-             PanelBaseWithHeader,
+             PanelBase,
              IActivePanel,
              guid,
              reactViz) {
@@ -21,37 +21,42 @@ define([
 
     function WebGMEReactVizPanel(layoutManager, params) {
         const options = {};
-        //set properties from options
-        options[PanelBaseWithHeader.OPTIONS.LOGGER_INSTANCE_NAME] = 'WebGMEReactVizPanel';
-        options[PanelBaseWithHeader.OPTIONS.FLOATING_TITLE] = true;
+        // set properties from options
+        options[PanelBase.OPTIONS.LOGGER_INSTANCE_NAME] = 'WebGMEReactVizPanel';
+        options[PanelBase.OPTIONS.FLOATING_TITLE] = true;
 
-        //call parent's constructor
-        PanelBaseWithHeader.apply(this, [options, layoutManager]);
+        // call parent's constructor
+        PanelBase.apply(this, [options, layoutManager]);
 
         WebGMEGlobal.WebGMEReactPanels = WebGMEReactPanels;
 
-        this._client = params.client;
+        this.client = params.client;
+        this.activeNode = null;
 
-        this.appId = 'react-viz-id-' + guid();
+        this.appId = `react-viz-id-${guid()}`;
 
-        //initialize UI
-        this._initialize();
+        // initialize UI
+        this.initialize();
 
         this.logger.debug('ctor finished');
     }
 
-    //inherit from PanelBaseWithHeader
-    _.extend(WebGMEReactVizPanel.prototype, PanelBaseWithHeader.prototype);
+    // inherit from PanelBaseWithHeader
+    _.extend(WebGMEReactVizPanel.prototype, PanelBase.prototype);
     _.extend(WebGMEReactVizPanel.prototype, IActivePanel.prototype);
 
-    WebGMEReactVizPanel.prototype._initialize = function () {
+    WebGMEReactVizPanel.prototype.initialize = function initialize() {
         this.$el.prop('id', this.appId);
-        this._activeNode = WebGMEGlobal.State.getActiveObject();
+        this.$el.css({
+            width: '100%',
+            height: '100%',
+        });
+        this.activeNode = WebGMEGlobal.State.getActiveObject();
 
         this.stateMediator = {
             // Called by react component
             setActiveNode: (activeNode) => {
-                this._activeNode = activeNode;
+                this.activeNode = activeNode;
                 WebGMEGlobal.State.registerActiveObject(activeNode);
             },
             setActiveSelection: (activeSelection) => {
@@ -59,10 +64,10 @@ define([
             },
             // Overwritten by the react-component
             onActiveNodeChange: (activeNode) => {
-                console.warn('onActiveNodeChange not overwritten by react component..');
+                console.warn('onActiveNodeChange not overwritten by react component..', activeNode);
             },
             onActiveSelectionChange: (activeSelection) => {
-                console.warn('onActiveSelectionChange not overwritten by react component..');
+                console.warn('onActiveSelectionChange not overwritten by react component..', activeSelection);
             },
             // Life-cycle placeholders.
             onActivate: () => {
@@ -75,24 +80,24 @@ define([
                 console.warn('onDestroy not overwritten by react component');
             },
             onReadOnlyChanged: (isReadonly) => {
-                console.warn('onReadOnlyChanged not overwritten by react component');
+                console.warn('onReadOnlyChanged not overwritten by react component', isReadonly);
             },
-            // This is needed at activation..
-            getActiveNode: () => {
-                console.warn('getActiveNode not overwritten by react component');
-            }
+            onResize: (width, height) => {
+                console.warn('onResize not overwritten by react component', width, height);
+            },
         };
 
         const initialState = {
             // The UI state, these can be modified by the react app as well.
             activeNode: WebGMEGlobal.State.getActiveObject(),
             activeSelection: WebGMEGlobal.State.getActiveSelection(),
-            activeTab: WebGMEGlobal.State.getActiveTab(),
-            activeAspect: WebGMEGlobal.State.getActiveAspect(),
+
+            // activeTab: WebGMEGlobal.State.getActiveTab(),
+            // activeAspect: WebGMEGlobal.State.getActiveAspect(),
 
             // Panel state (are passed in by the e.g. split-panel)
-            isActive: false,
-            isReadOnly: false,
+            isActivePanel: false,
+            readOnly: false,
             // size: {
             //     width: 0,
             //     height: 0,
@@ -100,75 +105,69 @@ define([
         };
 
         WebGMEReactPanels[this.appId] = {
-            client: this._client,
+            client: this.client,
             initialized: false,
             initialState,
             stateMediator: this.stateMediator,
         };
-
-        // The $el element does not exist in the DOM yet.
-        setTimeout(() => {
-            reactViz(this.appId);
-            this.onActivate();
-        });
     };
 
-    /* OVERRIDE FROM WIDGET-WITH-HEADER */
-    /* METHOD CALLED WHEN THE WIDGET'S READ-ONLY PROPERTY CHANGES */
-    WebGMEReactVizPanel.prototype.onReadOnlyChanged = function (isReadOnly) {
-        //apply parent's onReadOnlyChanged
-        PanelBaseWithHeader.prototype.onReadOnlyChanged.call(this, isReadOnly);
+    WebGMEReactVizPanel.prototype.afterAppend = function afterAppend() {
+        reactViz(this.appId);
+        this.onActivate();
+    };
+
+    WebGMEReactVizPanel.prototype.onReadOnlyChanged = function onReadOnlyChanged(isReadOnly) {
+        // apply parent's onReadOnlyChanged
+        PanelBase.prototype.onReadOnlyChanged.call(this, isReadOnly);
         this.stateMediator.onReadOnlyChanged(isReadOnly);
     };
 
-    WebGMEReactVizPanel.prototype.onResize = function (width, height) {
-        // this.logger.debug('onResize --> width: ' + width + ', height: ' + height);
-        // this.widget.onWidgetContainerResize(width, height);
+    WebGMEReactVizPanel.prototype.onResize = function onResize(width, height) {
+        this.stateMediator.onResize(width, height);
     };
 
-    WebGMEReactVizPanel.prototype._stateActiveObjectChanged = function (model, activeNode) {
-        console.log('Panel initialized?', WebGMEReactPanels[this.appId].initialized);
-        this._activeNode = activeNode;
+    WebGMEReactVizPanel.prototype.stateActiveObjectChanged = function stateActiveObjectChanged(model, activeNode) {
+        this.activeNode = activeNode;
         this.stateMediator.onActiveNodeChange(activeNode);
     };
 
-    WebGMEReactVizPanel.prototype._stateActiveSelectionChanged = function (model, activeSelection) {
-        console.log('Panel initialized?', WebGMEReactPanels[this.appId].initialized);
+    WebGMEReactVizPanel.prototype.stateActiveSelectionChanged = function stateActiveSelectionChanged(model, activeSelection) {
         this.stateMediator.onActiveSelectionChange(activeSelection);
     };
 
     /* * * * * * * * Visualizer life cycle callbacks * * * * * * * */
-    WebGMEReactVizPanel.prototype._attachClientEventListeners = function () {
-        this._detachClientEventListeners();
-        WebGMEGlobal.State.on('change:' + CONSTANTS.STATE_ACTIVE_OBJECT, this._stateActiveObjectChanged, this);
-        WebGMEGlobal.State.on('change:' + CONSTANTS.STATE_ACTIVE_SELECTION, this._stateActiveSelectionChanged, this);
+    WebGMEReactVizPanel.prototype.attachClientEventListeners = function attachClientEventListeners() {
+        this.detachClientEventListeners();
+        WebGMEGlobal.State.on(`change:${CONSTANTS.STATE_ACTIVE_OBJECT}`, this.stateActiveObjectChanged, this);
+        WebGMEGlobal.State.on(`change:${CONSTANTS.STATE_ACTIVE_SELECTION}`, this.stateActiveSelectionChanged, this);
     };
 
-    WebGMEReactVizPanel.prototype._detachClientEventListeners = function () {
-        WebGMEGlobal.State.off('change:' + CONSTANTS.STATE_ACTIVE_OBJECT, this._stateActiveObjectChanged);
-        WebGMEGlobal.State.off('change:' + CONSTANTS.STATE_ACTIVE_SELECTION, this._stateActiveSelectionChanged);
+    WebGMEReactVizPanel.prototype.detachClientEventListeners = function detachClientEventListeners() {
+        WebGMEGlobal.State.off(`change:${CONSTANTS.STATE_ACTIVE_OBJECT}`, this.stateActiveObjectChanged);
+        WebGMEGlobal.State.off(`change:${CONSTANTS.STATE_ACTIVE_SELECTION}`, this.stateActiveSelectionChanged);
     };
 
-    WebGMEReactVizPanel.prototype.destroy = function () {
-        this._detachClientEventListeners();
+    WebGMEReactVizPanel.prototype.destroy = function destroy() {
+        this.detachClientEventListeners();
         this.stateMediator.onDestroy();
         delete WebGMEReactPanels[this.appId];
-        PanelBaseWithHeader.prototype.destroy.call(this);
+        PanelBase.prototype.destroy.call(this);
     };
 
-    WebGMEReactVizPanel.prototype.onActivate = function () {
-        this._attachClientEventListeners();
+    WebGMEReactVizPanel.prototype.onActivate = function onActivate() {
+        this.attachClientEventListeners();
         this.stateMediator.onActivate();
-        if (typeof this._activeNode === 'string') {
+        if (typeof this.activeNode === 'string') {
             WebGMEGlobal.State.registerActiveObject(
-                this._activeNode,
-                {suppressVisualizerFromNode: true}
+                this.activeNode,
+                {suppressVisualizerFromNode: true},
             );
         }
     };
 
-    WebGMEReactVizPanel.prototype.onDeactivate = function () {
-        this._detachClientEventListeners();
+    WebGMEReactVizPanel.prototype.onDeactivate = function onDeactivate() {
+        this.detachClientEventListeners();
         this.stateMediator.onDeactivate();
     };
 
