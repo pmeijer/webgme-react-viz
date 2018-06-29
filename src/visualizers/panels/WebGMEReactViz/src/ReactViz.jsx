@@ -5,7 +5,8 @@ import {createStore} from 'redux';
 
 import reducers from './containers/reducers';
 import {setActiveNode, setActiveSelection, setIsActivePanel, setReadOnly, setPanelSize} from './containers/actions';
-import ChildrenList from './containers/ChildrenList';
+import StatefullSubTree from './containers/StatefullSubTree';
+import NodeList from './components/NodeList';
 
 export default class ReactViz extends Component {
     static propTypes = {
@@ -21,11 +22,11 @@ export default class ReactViz extends Component {
         const {stateMediator} = this.props;
 
         stateMediator.onActiveNodeChange = (activeNode) => {
-            this.store.dispatch(setActiveNode(activeNode));
+            this.store.dispatch(setActiveNode(typeof activeNode === 'string' ? activeNode : null));
         };
 
         stateMediator.onActiveSelectionChange = (activeSelection) => {
-            this.store.dispatch(setActiveSelection(activeSelection));
+            this.store.dispatch(setActiveSelection(activeSelection instanceof Array ? activeSelection : []));
         };
 
         stateMediator.onActivate = () => {
@@ -46,9 +47,10 @@ export default class ReactViz extends Component {
 
         this.store.subscribe(() => {
             const state = this.store.getState();
-            // TODO: Do we need to filter the state or will BackBone take care of this?
-            stateMediator.setActiveNode(state.activeNode);
-            stateMediator.setActiveSelection(state.activeSelection);
+            if (state.isActivePanel) {
+                stateMediator.setActiveNode(state.activeNode);
+                stateMediator.setActiveSelection(state.activeSelection);
+            }
         });
     }
 
@@ -57,24 +59,16 @@ export default class ReactViz extends Component {
         let content = <div/>;
 
         if (gmeClient) {
-            content = <ChildrenList gmeClient={this.props.gmeClient}/>;
+            content = (
+                <StatefullSubTree gmeClient={this.props.gmeClient}>
+                    <NodeList/>
+                </StatefullSubTree>
+            );
         }
 
         return (
             <Provider store={this.store}>
-                <div className="App">
-                    <header className="App-header">
-                        <img
-                            src={'/assets/DecoratorSVG/Router.svg'}
-                            className={gmeClient ? "App-logo" : "App-logo-loading"}
-                            alt="logo"
-                        />
-                        <h1 className="App-title">
-                            {gmeClient ? "Visualizer loaded" : "Loading Visualizer..."}
-                        </h1>
-                    </header>
-                    {content}
-                </div>
+                {content}
             </Provider>
         );
     }

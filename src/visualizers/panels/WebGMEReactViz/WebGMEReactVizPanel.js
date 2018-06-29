@@ -51,13 +51,16 @@ define([
             width: '100%',
             height: '100%',
         });
+
         this.activeNode = WebGMEGlobal.State.getActiveObject();
 
         this.stateMediator = {
             // Called by react component
             setActiveNode: (activeNode) => {
-                this.activeNode = activeNode;
-                WebGMEGlobal.State.registerActiveObject(activeNode);
+                if (typeof activeNode === 'string' && this.activeNode !== activeNode) {
+                    this.activeNode = activeNode;
+                    WebGMEGlobal.State.registerActiveObject(activeNode);
+                }
             },
             setActiveSelection: (activeSelection) => {
                 WebGMEGlobal.State.registerActiveSelection(activeSelection);
@@ -89,7 +92,7 @@ define([
 
         const initialState = {
             // The UI state, these can be modified by the react app as well.
-            activeNode: WebGMEGlobal.State.getActiveObject(),
+            activeNode: this.activeNode,
             activeSelection: WebGMEGlobal.State.getActiveSelection(),
 
             // activeTab: WebGMEGlobal.State.getActiveTab(),
@@ -114,7 +117,6 @@ define([
 
     WebGMEReactVizPanel.prototype.afterAppend = function afterAppend() {
         reactViz(this.appId);
-        this.onActivate();
     };
 
     WebGMEReactVizPanel.prototype.onReadOnlyChanged = function onReadOnlyChanged(isReadOnly) {
@@ -128,8 +130,10 @@ define([
     };
 
     WebGMEReactVizPanel.prototype.stateActiveObjectChanged = function stateActiveObjectChanged(model, activeNode) {
-        this.activeNode = activeNode;
-        this.stateMediator.onActiveNodeChange(activeNode);
+        if (this.activeNode !== activeNode) {
+            this.activeNode = activeNode;
+            this.stateMediator.onActiveNodeChange(activeNode);
+        }
     };
 
     WebGMEReactVizPanel.prototype.stateActiveSelectionChanged = function stateActiveSelectionChanged(model, activeSelection) {

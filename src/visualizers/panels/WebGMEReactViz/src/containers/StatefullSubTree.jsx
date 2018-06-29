@@ -2,7 +2,7 @@ import React from 'react';
 import {connect} from 'react-redux';
 
 import {setActiveNode, setActiveSelection} from './actions';
-import ChildrenList from '../components/ChildrenList';
+import SubTree from '../gme/SubTree';
 
 const mapStateToProps = state => ({
     activeNode: state.activeNode,
@@ -23,4 +23,4 @@ const mapDispatchToProps = dispatch => ({
     },
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(ChildrenList);
+export default connect(mapStateToProps, mapDispatchToProps)(SubTree);

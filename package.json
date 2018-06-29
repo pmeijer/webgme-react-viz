@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@material-ui/icons": "^1.0.0-beta.42",
+    "@material-ui/core": "^1.2.2",
+    "@material-ui/icons": "^1.1.0",
     "immutability-helper": "^2.6.6",
-    "material-ui": "^1.0.0-beta.40",
     "prop-types": "^15.6.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",

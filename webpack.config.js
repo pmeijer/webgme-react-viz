@@ -3,7 +3,7 @@ var WrapperPlugin = require('wrapper-webpack-plugin');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 module.exports = {
-    entry: './src/visualizers/panels/WebGMEReactViz/src/index.js',
+    entry: './src/visualizers/panels/WebGMEReactViz/src/index.jsx',
     output: {
         filename: 'reactViz.bundle.js',
         path: path.join(__dirname, './src/visualizers/panels/WebGMEReactViz/')
